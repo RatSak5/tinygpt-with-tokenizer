@@ -1,31 +1,34 @@
-# microGPT2
+# nano-narrator
 
-A decoder-only transformer language model built entirely from scratch in PyTorch — including a hand-written attention mechanism, positional encoding, and custom optimizer implementations (Adam, AdamW, RMSprop, AdaGrad, SGD). No `torch.nn.TransformerDecoder` or `torch.optim` — the core building blocks are implemented manually to understand exactly how each piece works.
+Basically a transformer like the ShakespeareGPT repo except it has a tokenizer and takes substantially more time to train.
 
-Trained on the [TinyStories](https://huggingface.co/datasets/roneneldan/TinyStories) dataset to generate short, simple English stories.
-
-## Features
-
-- **Custom decoder-only transformer** — multi-head self-attention with causal masking, positional encoding, feedforward blocks, and layer normalization, all implemented from scratch
-- **Custom tokenizer training** — Byte-level BPE tokenizer trained directly on the target corpus
-- **Memory-efficient data pipeline** — tokenizes large corpora in chunks and stores tokens as a disk-backed `numpy` memmap (`uint16`) instead of loading the entire dataset into RAM, so training scales to full-size corpora (400M+ tokens) without memory issues
-- **Custom optimizers written from scratch**: Adam, AdamW (with decoupled weight decay), RMSprop, AdaGrad, and SGD with momentum
-- **Noam-style learning rate schedule** with linear warmup followed by inverse-square-root decay
-- **Gradient clipping**, checkpointing, and loss curve visualization built into the training loop
-- **Top-k sampling with temperature control** for text generation
+I personally trained on the [TinyStories](https://huggingface.co/datasets/roneneldan/TinyStories) dataset to generate short, simple English stories.
 
 ## Project structure
 
 ```
 microgpt2/
-├── main.py             # training entry point (CLI args, config, training loop)
+├── main.py             # training entry point
 ├── generate.py          # text generation from a saved checkpoint
 ├── data.py              # tokenizer training, chunked tokenization, batching, optimizer config
 ├── models.py            # DecoderOnlyModel definition and training loop
 ├── building_blocks.py   # attention, positional encoding, feedforward, layer norm
-├── optim.py             # custom Adam, AdamW, RMSprop, AdaGrad, SGD implementations
-├── checkpoint.py         # checkpoint saving/loading
-└── loss_curve.png        # training/validation loss plot from the last run
+├── optim.py             # Adam, AdamW, RMSprop, AdaGrad, SGD implementations
+└── checkpoint.py         # checkpoint saving/loading
+```
+
+## A short example
+This is an example of a story produced by the model I trained, given the prompt "Once upon a time, there lived a"
+
+```
+Once upon a time, there lived a little girl called Lucy. She was three years old and very happy. One day, Lucy decided to go for a walk in the garden. She walked up the hill in a tall grass.
+As she walked, she noticed something strange. There was a big black, brown bear sitting on a tree. Lucy was so scared she did not understand why the bear was so loud. "Help!" she shouted.
+The bear didn't come down or it growled. "Do you want to catch me?" he asked.
+Lucy was scared, but the bear smiled. "Please don't bite me," he said.
+"Of course I can," said the bear. "I'll be brave and share your food with you."
+Lucy was so happy she jumped up and down. But then she heard a loud noise.
+"It's okay," said the bear. "I'm just trying to catch you. I'm very afraid of the woods."
+Lucy hugged the bear and said, "I'm sure you should be careful." The bear smiled and said, "I will always protect you away from the forest. It's like you're always brave to explore."
 ```
 
 ## Usage
@@ -88,6 +91,7 @@ python generate.py \
 
 ## Notes
 
+- The given numbers above are also the numbers I used while training the particular model which produced the above example.
 - The data pipeline currently expects a single plain-text file with UTF-8 encoding. TinyStories' raw files use `<|endoftext|>` as a story separator; a cleaning step is used beforehand to normalize this into blank-line-separated stories.
 - Context length is currently limited to `block_size` tokens — generations longer than the training window will lose access to earlier context, which can affect long-range plot coherence.
 - This project is primarily educational: the goal is understanding transformer internals and the LM training pipeline end-to-end, not state-of-the-art output quality. At small scale (~20M parameters), expect locally coherent grammar and sentence structure, with some drift in longer-range narrative consistency.
