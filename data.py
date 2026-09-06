@@ -11,19 +11,6 @@ from tokenizers import (
     trainers,
 )
 
-
-def make_tokenizer_word_level(file_path, vocab_size):
-    tok = Tokenizer(models.WordLevel(unk_token="<unk>"))
-    tok.pre_tokenizer = pre_tokenizers.WhitespaceSplit()
-
-    trainer = trainers.WordLevelTrainer(vocab_size=vocab_size, special_tokens=["<unk>"])
-    tok.train(files=[file_path], trainer=trainer)
-
-    tok.save("word_tokenizer.json")
-
-    return Tokenizer.from_file("word_tokenizer.json")
-
-
 def make_tokenizer_BPE(file_path, vocab_size):
     tok = ByteLevelBPETokenizer()
     tok.train(files=file_path, vocab_size=vocab_size, min_frequency=50)
